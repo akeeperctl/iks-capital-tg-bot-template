@@ -1,0 +1,58 @@
+services:
+   postgres:
+      image: postgres:16-alpine
+      container_name: 'bot-template-postgres'
+      restart: always
+      env_file: .env
+      environment:
+         POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+         POSTGRES_USER: ${POSTGRES_USER}
+         POSTGRES_DB: ${POSTGRES_DB}
+         PGDATA: ${POSTGRES_DATA}
+      ports:
+         - "${POSTGRES_PORT}:5432"
+      expose:
+         - "${POSTGRES_PORT}"
+      volumes:
+         - postgres-data:${POSTGRES_DATA}
+      networks:
+         - bot-network
+
+   app:
+      build:
+         context: .
+         dockerfile: Dockerfile
+      container_name: 'bot-template-app'
+      restart: always
+      env_file: .env
+      depends_on:
+         - postgres
+      ports:
+         - "${SERVER_PORT}:${SERVER_PORT}"
+      entrypoint: [ "/app/scripts/run-bot.sh" ]
+      networks:
+         - bot-network
+
+   tests:
+      build:
+         context: .
+         dockerfile: Dockerfile
+      container_name: 'bot-template-tests'
+      env_file: .env.dist
+      depends_on:
+         - postgres
+      entrypoint: [ "/app/scripts/run-tests.sh" ]
+      volumes:
+         - test-data:/app/tests/data
+      networks:
+         - bot-network
+      restart: "no"
+
+volumes:
+   postgres-data:
+   test-data:
+
+networks:
+   bot-network:
+      driver: bridge
+      name: "bot-network"

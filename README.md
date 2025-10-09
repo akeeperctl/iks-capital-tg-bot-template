@@ -1,93 +1,220 @@
-# iks-capital-tg-bot-template
+# Telegram Bot Template
 
+Базовый шаблон проекта на основе Aiogram 3.x + FastAPI для создания Telegram ботов с админ-панелью.
 
+## Системные зависимости
 
-## Getting started
+- Python 3.12+
+- Docker и docker-compose
+- make
+- uv (Python package manager)
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Быстрый старт с Docker
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin http://gitlab.local.vkhnychenko.ru/iks-exchange/iks-capital-tg-bot-template.git
-git branch -M main
-git push -uf origin main
+1. Создайте `.env` файл на основе примера и настройте переменные окружения:
+```bash
+cp .env.example .env
 ```
 
-## Integrate with your tools
+2. Основные переменные для настройки:
+```env
+# Telegram
+TELEGRAM_LOCALES=ru,en
+TELEGRAM_BOT_TOKEN=42:ABC
+TELEGRAM_DROP_PENDING_UPDATES=False
 
-- [ ] [Set up project integrations](http://gitlab.local.vkhnychenko.ru/iks-exchange/iks-capital-tg-bot-template/-/settings/integrations)
+# Database
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=bot_db
+POSTGRES_USER=bot_user
+POSTGRES_PASSWORD=your_password
 
-## Collaborate with your team
+# Server (для админ-панели)
+SERVER_HOST=0.0.0.0
+SERVER_PORT=8081
+SERVER_URL=http://localhost:8081
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+# Middleware
+MIDDLEWARE_SESSION_SECRET_KEY=some
+MIDDLEWARE_SESSION_HTTPS_ONLY=True
+MIDDLEWARE_CORS_ORIGINS=localhost
+MIDDLEWARE_CORS_ALLOW_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+MIDDLEWARE_CORS_ALLOW_HEADERS=Authorization,Content-Type,X-CSRF-TokenSSION_HTTPS_ONLY=True
+MIDDLEWARE_SESSION_SECRET_KEY=your_secret_key_here
+```
 
-## Test and Deploy
+3. Запустите приложение:
+```bash
+make app-build
+make app-run
+```
 
-Use the built-in continuous integration in GitLab.
+или напрямую через docker compose:
+```bash
+docker compose up --build -d
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+4. Создайте пользователя-администратора:
+```bash
+make create-admin
+```
 
-***
+Используйте `make` для просмотра всех доступных команд.
 
-# Editing this README
+## Разработка
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Установка окружения
 
-## Suggestions for a good README
+```bash
+uv sync
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### Работа с миграциями базы данных
 
-## Name
-Choose a self-explaining name for your project.
+**Создать миграцию:**
+```bash
+make migration message="описание изменений"
+```
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+**Применить миграции:**
+```bash
+make migrate
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Локальный запуск
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+**Вариант 1: Запуск всего через Docker**
+```bash
+docker compose up --build
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+**Вариант 2: БД в Docker, приложение локально**
+```bash
+# Terminal 1 - База данных
+docker compose up postgres
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+# Terminal 2 - Бот с админ-панелью (polling mode)
+uv run python -m app
+```
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Админ-панель будет доступна по адресу: `http://localhost:8080/admin`
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+**Вариант 3: Webhook режим**
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+Настройте в `.env`:
+```env
+TELEGRAM_USE_WEBHOOK=true
+TELEGRAM_WEBHOOK_PATH=/webhook/telegram
+TELEGRAM_WEBHOOK_SECRET=your_webhook_secret
+TELEGRAM_RESET_WEBHOOK=true
+SERVER_URL=https://your-domain.com
+```
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+### Запуск тестов
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+**Локально:**
+```bash
+alembic upgrade head
+pytest -v -s tests
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+**В Docker:**
+```bash
+make test
+```
 
-## License
-For open source projects, say how it is licensed.
+## Используемые технологии
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- [uv](https://docs.astral.sh/uv/) - быстрый менеджер пакетов Python
+- [Aiogram 3.x](https://github.com/aiogram/aiogram) - фреймворк для Telegram ботов
+- [FastAPI](https://fastapi.tiangolo.com/) - веб-фреймворк для создания API
+- [PostgreSQL](https://www.postgresql.org/) - реляционная база данных
+- [SQLAlchemy 2.0](https://docs.sqlalchemy.org/en/20/) - ORM для работы с БД
+- [Alembic](https://alembic.sqlalchemy.org/en/latest/) - инструмент для миграций БД
+- [Starlette Admin](https://jowilf.github.io/starlette-admin/) - админ-панель для FastAPI
+- [Pydantic v2](https://docs.pydantic.dev/) - валидация данных и настроек
+
+## Структура проекта
+
+### Основные модули
+
+```
+app/
+├── admin/                 # Админ-панель (Starlette Admin)
+│   ├── auth.py            # Аутентификация
+│   ├── middlewares/       # Middleware для админки
+│   └── views/             # Представления моделей
+├── const.py               # Константы приложения
+├── endpoints/             # API endpoints
+│   ├── healthcheck.py     # Health checks
+│   └── telegram.py        # Webhook handler
+├── factory/               # Фабрики создания объектов
+│   ├── admin.py           # Настройка админ-панели
+│   ├── app_config.py      # Создание конфигурации
+│   ├── services.py        # Создание сервисов
+│   ├── session_pool.py    # Создание пула сессий БД
+│   └── telegram/          # Настройка бота
+│       ├── bot.py         # Создание Bot
+│       ├── dispatcher.py  # Создание Dispatcher
+│       └── fastapi.py     # Настройка FastAPI
+├── models/                # Модели данных
+│   ├── config/            # Конфигурация приложения
+│   ├── dto/               # Data Transfer Objects
+│   └── sql/               # SQLAlchemy модели
+├── runners/               # Режимы запуска
+│   ├── app.py             # Основной runner
+│   ├── lifespan.py        # Lifespan managers
+│   ├── polling.py         # Polling режим
+│   └── webhook.py         # Webhook режим
+├── services/              # Бизнес-логика
+│   ├── base.py            # Базовый сервис
+│   ├── postgres/          # Работа с PostgreSQL
+│   │   ├── context.py     # SQLAlchemy context
+│   │   └── repositories/  # Репозитории
+│   └── user.py            # Сервис пользователей
+├── telegram/              # Telegram бот
+│   ├── handlers/          # Обработчики команд
+│   │   └── main/          # Основные handlers
+│   └── middlewares/       # Middleware для бота
+│       ├── db.py          # DB session middleware
+│       ├── event_typed.py # Базовый typed middleware
+│       └── user.py        # User middleware
+└── utils/                 # Утилиты
+    ├── custom_types.py    # Кастомные типы
+    ├── logging/           # Настройка логирования
+    └── time.py            # Утилиты для работы со временем
+```
+
+### Модели данных
+
+**User** - пользователи Telegram бота
+- `telegram_id` - ID пользователя в Telegram
+- `name` - имя пользователя
+- `username` - username в Telegram
+- `language` - язык интерфейса
+- `language_code` - код языка от Telegram
+- `bot_blocked` - заблокировал ли пользователь бота
+
+Автоматически создается при первом взаимодействии с ботом.
+
+**AdminUser** - администраторы системы
+- `username` - логин администратора
+- `password` - хеш пароля (bcrypt)
+- `name` - отображаемое имя
+
+Используется для входа в админ-панель.
+
+## Основные возможности
+
+### Telegram Bot
+
+- Автоматическая регистрация пользователей при взаимодействии
+- Middleware для обработки пользователей
+- Поддержка нескольких языков
+- Команда `/start` с приветствием
+- Поддержка polling и webhook режимов
+
+### Админ-панель
+
+Доступна по адресу `http://localhost:8080/admin` после запуска приложения.
