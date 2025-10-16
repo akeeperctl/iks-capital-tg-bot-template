@@ -1,4 +1,6 @@
 import logging
+import secrets
+import string
 from typing import Final
 
 from starlette.requests import Request
@@ -11,12 +13,12 @@ logger: Final[logging.Logger] = logging.getLogger(name=__name__)
 
 class CustomAuthProvider(AuthProvider):
     async def login(
-        self,
-        username: str,
-        password: str,
-        remember_me: bool,
-        request: Request,
-        response: Response,
+            self,
+            username: str,
+            password: str,
+            remember_me: bool,
+            request: Request,
+            response: Response,
     ) -> Response:
         if not username or len(username) < 5:
             raise FormValidationError({"username": "Username must be at least 5 characters"})
@@ -29,7 +31,7 @@ class CustomAuthProvider(AuthProvider):
         except Exception:
             logger.exception("Error while logging in")
             raise LoginFailed(
-                "An unexpected error occurred during login. Please contact administrator"
+                "An unexpected error occurred during login. Please contact administrator",
             )
 
         if not user:
@@ -80,3 +82,37 @@ class CustomAuthProvider(AuthProvider):
         request.session.clear()
         logger.info(f"User user_id: {user.user_id}, username: {user.username} logout.")
         return response
+
+
+## Akeeper 16.10.2025
+def generate_password(length: int = 12):
+    """
+    Генерация пароля с использованием модуля secrets
+
+    Args:
+        length: Длина пароля (по умолчанию 12 символов)
+
+    Returns:
+        str: пароль
+    """
+
+    # Символы для генерации пароля
+    special = "!@#$%^&*"
+    alphabet = string.ascii_letters + string.digits + special
+
+    # Генерируем пароль используя cryptographically secure random
+    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+
+    # Убеждаемся что пароль содержит хотя бы одну цифру, букву и спецсимвол
+    has_lower = any(c.islower() for c in password)
+    has_upper = any(c.isupper() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    has_special = any(c in special for c in password)
+
+    # Если пароль не соответствует требованиям, генерируем заново
+    if not all([has_lower, has_upper, has_digit, has_special]):
+        return generate_password(length)
+
+    return password
+
+## ~Akeeper

@@ -4,12 +4,25 @@ import bcrypt
 from aiogram.types import User as AiogramUser
 
 from app.models.dto import AdminUserDto, UserDto
-from app.models.sql import User
+from app.models.sql import User, AdminUser
 
 from .base import BaseService
+from ..admin.auth import generate_password
+from ..models.dto.user import AdminUserCreateDto
 
 
 class AdminUserService(BaseService):
+
+    async def create(self, data: AdminUserCreateDto) -> AdminUserDto:
+        db_admin_user: AdminUser = AdminUser(
+            password=generate_password(),
+            **data.model_dump()
+        )
+
+        self.session.add(db_admin_user)
+        await self.session.flush()
+        return db_admin_user.dto()
+
     async def get_by_username(self, username: str) -> AdminUserDto | None:
         obj = await self.repository.admin_users.get_by_username(username=username)
         if obj is None:

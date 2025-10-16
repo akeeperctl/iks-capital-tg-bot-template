@@ -95,3 +95,11 @@ ifeq ($(OS),Windows_NT)
 else
 	@PYTHONPATH=$(project_dir) uv run python scripts/create_admin_user.py
 endif
+
+.PHONY: create-super-admin
+create-super-admin: ## Create super-admin user
+ifeq ($(OS),Windows_NT)
+	@set PYTHONPATH=$(project_dir) && uv run python scripts/create_super_admin_user.py
+else
+	@PYTHONPATH=$(project_dir) uv run python scripts/create_super_admin_user.py
+endif
