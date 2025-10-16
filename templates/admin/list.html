@@ -1,0 +1,25 @@
+{% extends "starlette_admin/list.html" %}
+
+{% block modal %}
+    {{ super() }}
+    {% include "admin/modals/info.html" %}
+{% endblock %}
+
+{% block script %}
+    {{ super() }}
+
+    {% if request.session.get('show_info_modal') %}
+        <script type="text/javascript">
+            var modalInfo = new bootstrap.Modal(document.getElementById('modal-info'));
+            modalInfo.show();
+        </script>
+    {% endif %}
+
+    {% if request.session.get('show_info_modal') %}
+        {% set _ = request.session.pop('show_info_modal') %}
+        {% set _ = request.session.pop('info_modal_data') %}
+    {% endif %}
+
+
+{% endblock %}
+

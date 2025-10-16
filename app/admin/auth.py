@@ -3,6 +3,7 @@ import secrets
 import string
 from typing import Final
 
+import bcrypt
 from starlette.requests import Request
 from starlette.responses import Response
 from starlette_admin.auth import AdminConfig, AdminUser, AuthProvider
@@ -114,5 +115,11 @@ def generate_password(length: int = 12):
         return generate_password(length)
 
     return password
+
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode(
+        "utf-8",
+    )
 
 ## ~Akeeper

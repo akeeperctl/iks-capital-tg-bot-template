@@ -15,6 +15,7 @@ class AdminUserDto(ActiveRecordModel):
 
     ## Akeeper 16.10.2025
     is_super_admin: bool = False
+
     ## ~Akeeper
 
     def check_password(self, password: str) -> bool:
@@ -27,7 +28,11 @@ class AdminUserDto(ActiveRecordModel):
 class AdminUserCreateDto(ActiveRecordModel):
     name: str
     username: str
-    is_superuser: bool = False
+    is_super_admin: bool = False
+
+
+class AdminUserCreateWithPwdDto(AdminUserCreateDto):
+    password: Optional[str] = None
 
 
 class UserDto(ActiveRecordModel):

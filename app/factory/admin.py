@@ -10,23 +10,23 @@ from starlette_admin.contrib.sqla import Admin
 
 from app.admin.auth import CustomAuthProvider
 from app.admin.middlewares import DBSessionMiddleware
-from app.admin.views import UserView
+from app.admin.views import UserView, AdminUserView
 from app.models.config import AppConfig
-from app.models.sql import User
+from app.models.sql import User, AdminUser
 
 
 class CustomAdmin(Admin):
     def __init__(
-        self,
-        config: AppConfig,
-        title: str = "Admin",
-        base_url: str = "/admin",
-        route_name: str = "admin",
-        logo_url: Optional[str] = None,
-        login_logo_url: Optional[str] = None,
-        auth_provider: Optional[BaseAuthProvider] = None,
-        middlewares: Optional[Sequence[Middleware]] = None,
-        session_pool=None,
+            self,
+            config: AppConfig,
+            title: str = "Admin",
+            base_url: str = "/admin",
+            route_name: str = "admin",
+            logo_url: Optional[str] = None,
+            login_logo_url: Optional[str] = None,
+            auth_provider: Optional[BaseAuthProvider] = None,
+            middlewares: Optional[Sequence[Middleware]] = None,
+            session_pool=None,
     ) -> None:
         super(Admin, self).__init__(
             title=title,
@@ -36,6 +36,7 @@ class CustomAdmin(Admin):
             login_logo_url=login_logo_url,
             auth_provider=auth_provider,
             middlewares=middlewares,
+            templates_dir="templates",
         )
         self.config = config
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
@@ -45,9 +46,9 @@ class CustomAdmin(Admin):
         )
 
     def mount_to(
-        self,
-        app: Starlette,
-        redirect_slashes: bool = True,
+            self,
+            app: Starlette,
+            redirect_slashes: bool = True,
     ) -> None:
         admin_app = Starlette(
             routes=self.routes,
@@ -86,5 +87,10 @@ def setup_admin(app: FastAPI, config: AppConfig) -> FastAPI:
     # Add views
     admin.add_view(UserView(User, icon="fa fa-users"))
 
+    ## Akeeper 16.10.2025
+    admin.add_view(AdminUserView(AdminUser, icon="fa fa-users"))
+    ## ~Akeeper
+
     admin.mount_to(app)
+
     return app

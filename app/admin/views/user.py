@@ -7,12 +7,13 @@ from starlette_admin import (
     IntegerField,
     StringField,
 )
-from starlette_admin.contrib.sqla import ModelView
+
+from app.admin.views.base import BaseModelView
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class UserView(ModelView):
+class UserView(BaseModelView):
     fields = [
         IntegerField(
             name="user_id",
@@ -41,12 +42,12 @@ class UserView(ModelView):
         EnumField(
             name="language",
             label="Language",
-            choices=["ru", "en"]
+            choices=["ru", "en"],
         ),
     ]
 
     def can_create(self, request: Request) -> bool:
-        return False
+        return self.is_super_admin(request)
 
     def can_delete(self, request: Request) -> bool:
-        return False
+        return self.is_super_admin(request)
