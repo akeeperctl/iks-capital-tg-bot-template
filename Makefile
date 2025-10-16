@@ -1,6 +1,17 @@
 project_dir := .
 package_dir := app
 
+# Определение ОС
+ifeq ($(OS),Windows_NT)
+	DETECTED_OS := Windows
+	SET_ENV := set
+	AND := &&
+else
+	DETECTED_OS := $(shell uname -s)
+	SET_ENV :=
+	AND :=
+endif
+
 .PHONY: help
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
@@ -79,4 +90,8 @@ name: ## Get top-level package name
 
 .PHONY: create-admin
 create-admin: ## Create admin user
+ifeq ($(OS),Windows_NT)
+	@set PYTHONPATH=$(project_dir) && uv run python scripts/create_admin_user.py
+else
 	@PYTHONPATH=$(project_dir) uv run python scripts/create_admin_user.py
+endif
