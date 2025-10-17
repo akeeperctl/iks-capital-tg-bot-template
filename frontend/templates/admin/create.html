@@ -1,23 +1,7 @@
+{% from "admin/modals/macro_show_modal_info.html" import show_modal_info %}
 {% extends "starlette_admin/create.html" %}
-
-{% block modal %}
-    {% include "admin/modals/info.html" %}
-{% endblock %}
 
 {% block script %}
     {{ super() }}
-
-    {% if request.session.get('show_info_modal') %}
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Здесь уже точно есть все элементы DOM, можно показать модалку
-
-            var modal = new bootstrap.Modal(document.getElementById('modal-info'));
-            modal.show();
-        });
-        </script>
-
-        {% set _ = request.session.pop('show_info_modal') %}
-        {% set _ = request.session.pop('info_modal_data') %}
-    {% endif %}
+    {{ show_modal_info(request) }}
 {% endblock %}
