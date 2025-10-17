@@ -4,12 +4,13 @@ import bcrypt
 from pydantic import Field
 
 from app.models.base import ActiveRecordModel
+from app.utils.custom_types import EntityId, Str8, Str5, Str2
 
 
 class AdminUserDto(ActiveRecordModel):
-    user_id: int
-    name: str
-    username: str
+    user_id: EntityId
+    name: Str5
+    username: Str5
     password_hash: str = Field(..., alias="password")
     is_blocked: bool = False
 
@@ -26,20 +27,20 @@ class AdminUserDto(ActiveRecordModel):
 
 
 class AdminUserCreateDto(ActiveRecordModel):
-    name: str
-    username: str
+    name: Str5
+    username: Str5
     is_super_admin: bool = False
 
 
 class AdminUserCreateWithPwdDto(AdminUserCreateDto):
-    password: Optional[str] = None
+    password: Optional[Str8] = None
 
 
 class UserDto(ActiveRecordModel):
-    user_id: int
-    telegram_id: int
-    name: str
+    user_id: EntityId
+    telegram_id: EntityId
+    name: Str5
     language: str
-    username: Optional[str] = None
+    username: Optional[Str5] = None
     language_code: Optional[str] = None
     bot_blocked: bool = False
