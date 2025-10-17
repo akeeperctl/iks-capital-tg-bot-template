@@ -10,7 +10,6 @@ from ..models.dto.user import AdminUserCreateWithPwdDto
 
 
 class AdminUserService(BaseService):
-
     ## Akeeper 16.10.2025
     async def create(self, data: AdminUserCreateWithPwdDto) -> AdminUserDto:
         _data = data
@@ -43,7 +42,8 @@ class AdminUserService(BaseService):
         try:
             hashed_password = hash_password(new_password)
             updated_admin = await self.repository.admin_users.update(
-                username=username, password=hashed_password,
+                username=username,
+                password=hashed_password,
             )
             if updated_admin:
                 self.logger.info(f"Password updated successfully for admin: {username}")
@@ -56,9 +56,9 @@ class AdminUserService(BaseService):
 
 class UserService(BaseService):
     async def create(
-            self,
-            aiogram_user: AiogramUser,
-            language: str = "en",
+        self,
+        aiogram_user: AiogramUser,
+        language: str = "en",
     ) -> UserDto:
         db_user: User = User(
             telegram_id=aiogram_user.id,

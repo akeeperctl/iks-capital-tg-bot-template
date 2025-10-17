@@ -5,6 +5,7 @@ Revises: 0c1406fbafcb
 Create Date: 2025-10-16 11:56:49.541138
 
 """
+
 from typing import Optional, Sequence
 
 import sqlalchemy as sa
@@ -19,11 +20,13 @@ depends_on: Optional[Sequence[str]] = None
 
 def upgrade() -> None:
     op.add_column(
-        "admin", sa.Column("is_super_admin", sa.Boolean(), server_default="false", nullable=False),
+        "admin",
+        sa.Column("is_super_admin", sa.Boolean(), server_default="false", nullable=False),
         schema="users",
     )
     op.alter_column(
-        "admin", "user_id",
+        "admin",
+        "user_id",
         existing_type=sa.BIGINT(),
         type_=sa.Integer(),
         existing_nullable=False,
@@ -31,7 +34,8 @@ def upgrade() -> None:
         schema="users",
     )
     op.alter_column(
-        "user", "user_id",
+        "user",
+        "user_id",
         existing_type=sa.BIGINT(),
         type_=sa.Integer(),
         existing_nullable=False,
@@ -42,7 +46,8 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.alter_column(
-        "user", "user_id",
+        "user",
+        "user_id",
         existing_type=sa.Integer(),
         type_=sa.BIGINT(),
         existing_nullable=False,
@@ -50,7 +55,8 @@ def downgrade() -> None:
         schema="users",
     )
     op.alter_column(
-        "admin", "user_id",
+        "admin",
+        "user_id",
         existing_type=sa.Integer(),
         type_=sa.BIGINT(),
         existing_nullable=False,

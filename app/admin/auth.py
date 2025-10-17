@@ -14,12 +14,12 @@ logger: Final[logging.Logger] = logging.getLogger(name=__name__)
 
 class CustomAuthProvider(AuthProvider):
     async def login(
-            self,
-            username: str,
-            password: str,
-            remember_me: bool,
-            request: Request,
-            response: Response,
+        self,
+        username: str,
+        password: str,
+        remember_me: bool,
+        request: Request,
+        response: Response,
     ) -> Response:
         if not username or len(username) < 5:
             raise FormValidationError({"username": "Username must be at least 5 characters"})
@@ -102,7 +102,7 @@ def generate_password(length: int = 12):
     alphabet = string.ascii_letters + string.digits + special
 
     # Генерируем пароль используя cryptographically secure random
-    password = ''.join(secrets.choice(alphabet) for _ in range(length))
+    password = "".join(secrets.choice(alphabet) for _ in range(length))
 
     # Убеждаемся что пароль содержит хотя бы одну цифру, букву и спецсимвол
     has_lower = any(c.islower() for c in password)
@@ -121,5 +121,6 @@ def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode(
         "utf-8",
     )
+
 
 ## ~Akeeper

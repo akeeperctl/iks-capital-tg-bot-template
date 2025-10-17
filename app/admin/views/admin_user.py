@@ -6,7 +6,9 @@ from starlette.responses import RedirectResponse
 from starlette_admin import (
     BooleanField,
     IntegerField,
-    StringField, DateField, row_action,
+    StringField,
+    DateField,
+    row_action,
 )
 from starlette_admin.exceptions import ActionFailed, FormValidationError
 
@@ -19,7 +21,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AdminUserView(BaseModelView):
-    row_actions = ["reset_password", 'delete', 'edit']
+    row_actions = ["reset_password", "delete", "edit"]
 
     # Использует кастомные шаблоны для вывода нового модального окна
     list_template = str("admin/list.html")
@@ -55,7 +57,7 @@ class AdminUserView(BaseModelView):
             label="Created at",
             exclude_from_edit=True,
             exclude_from_create=True,
-        )
+        ),
     ]
 
     @row_action(
@@ -95,7 +97,6 @@ class AdminUserView(BaseModelView):
 
             return RedirectResponse(request.url_for("admin:list", identity=self.identity))
 
-
         except Exception as e:
             raise ActionFailed(f"Ошибка при сбросе пароля: {str(e)}")
 
@@ -117,7 +118,6 @@ class AdminUserView(BaseModelView):
         return await super().validate(request, data)
 
     async def create(self, request: Request, data: dict) -> Any:
-
         await self.validate(request, data)
 
         generated_password = generate_password()

@@ -12,23 +12,21 @@ from app.admin.auth import CustomAuthProvider
 from app.admin.middlewares import DBSessionMiddleware
 from app.admin.views import UserView, AdminUserView
 from app.models.config import AppConfig
-from app.models.dto import AdminUserDto, UserDto
-from app.models.dto.user import AdminUserCreateWithPwdDto
 from app.models.sql import User, AdminUser
 
 
 class CustomAdmin(Admin):
     def __init__(
-            self,
-            config: AppConfig,
-            title: str = "Admin",
-            base_url: str = "/admin",
-            route_name: str = "admin",
-            logo_url: Optional[str] = None,
-            login_logo_url: Optional[str] = None,
-            auth_provider: Optional[BaseAuthProvider] = None,
-            middlewares: Optional[Sequence[Middleware]] = None,
-            session_pool=None,
+        self,
+        config: AppConfig,
+        title: str = "Admin",
+        base_url: str = "/admin",
+        route_name: str = "admin",
+        logo_url: Optional[str] = None,
+        login_logo_url: Optional[str] = None,
+        auth_provider: Optional[BaseAuthProvider] = None,
+        middlewares: Optional[Sequence[Middleware]] = None,
+        session_pool=None,
     ) -> None:
         super(Admin, self).__init__(
             title=title,
@@ -48,9 +46,9 @@ class CustomAdmin(Admin):
         )
 
     def mount_to(
-            self,
-            app: Starlette,
-            redirect_slashes: bool = True,
+        self,
+        app: Starlette,
+        redirect_slashes: bool = True,
     ) -> None:
         admin_app = Starlette(
             routes=self.routes,
