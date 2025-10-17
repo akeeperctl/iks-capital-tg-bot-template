@@ -12,6 +12,8 @@ from app.admin.auth import CustomAuthProvider
 from app.admin.middlewares import DBSessionMiddleware
 from app.admin.views import UserView, AdminUserView
 from app.models.config import AppConfig
+from app.models.dto import AdminUserDto, UserDto
+from app.models.dto.user import AdminUserCreateWithPwdDto
 from app.models.sql import User, AdminUser
 
 

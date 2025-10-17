@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -8,7 +8,7 @@ from starlette_admin import (
     IntegerField,
     StringField, DateField, row_action,
 )
-from starlette_admin.exceptions import ActionFailed
+from starlette_admin.exceptions import ActionFailed, FormValidationError
 
 from app.admin.auth import generate_password
 from app.admin.views.base import BaseModelView
@@ -19,8 +19,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AdminUserView(BaseModelView):
-    row_actions = ["reset_password"]
+    row_actions = ["reset_password", 'delete', 'edit']
+
+    # Использует кастомные шаблоны для вывода нового модального окна
     list_template = str("admin/list.html")
+    create_template = str("admin/create.html")
+    edit_template = str("admin/edit.html")
 
     fields = [
         IntegerField(
@@ -82,7 +86,7 @@ class AdminUserView(BaseModelView):
             if not success:
                 raise ActionFailed(f"Ошибка при обновлении пароля")
 
-            # Пишем пароль во временную переменную сессии
+            # Пишет пароль во временную переменную сессии
             await self.show_info_modal(
                 request=request,
                 message=f"Новый пароль для администратора {admin_user.username}: ",
@@ -95,33 +99,46 @@ class AdminUserView(BaseModelView):
         except Exception as e:
             raise ActionFailed(f"Ошибка при сбросе пароля: {str(e)}")
 
-    async def create(self, request: Request, data: Dict[str, Any]) -> Any:
+    async def validate(self, request: Request, data: dict[str, Any]) -> None:
+        errors: dict[str, str] = dict()
 
-        try:
-            generated_password = generate_password()
+        # NOTE: если проверяемое поле отсутствует в форме, то исключение
+        #   валидации будет "проглочено" и не будет отображено для этого поля.
+        #   Соответственно страница просто обновится без каких-либо видимых ошибок,
+        #   что вызовет вопрос "Почему оно не обновилось и ошибку не показало".
 
-            _data = AdminUserCreateWithPwdDto.model_validate(data)
-            _data.password = generated_password
+        if "name" in data and (data.get("name") is None or len(data["name"]) < 5):
+            errors["name"] = "Ensure name has at least 5 characters"
+        if "username" in data and (data.get("username") is None or len(data["username"]) < 5):
+            errors["username"] = "Ensure username has at least 5 characters"
+        if len(errors) > 0:
+            logger.error("Validation errors: {}".format(errors))
+            raise FormValidationError(errors)
+        return await super().validate(request, data)
 
-            admin_user_service: AdminUserService = request.state.admin_user_service
-            admin_user = await admin_user_service.create(_data)
+    async def create(self, request: Request, data: dict) -> Any:
 
-            # Пишем пароль во временную переменную сессии
-            await self.show_info_modal(
-                request=request,
-                message=f"Сырой пароль созданного администратора {admin_user.username}: ",
-                data=generated_password,
-            )
+        await self.validate(request, data)
 
-            # Делаем redirect на список
-            return RedirectResponse(request.url_for("admin:list", identity=self.identity))
+        generated_password = generate_password()
 
-        except Exception as e:
-            return await self.show_info_modal(
-                request=request,
-                message=f"Ошибка при создании администратора: ",
-                data=str(e),
-            )
+        _data = AdminUserCreateWithPwdDto.model_validate(data)
+        _data.password = generated_password
+
+        admin_user_service: AdminUserService = request.state.admin_user_service
+        admin_user = await admin_user_service.create(_data)
+
+        # Пишет пароль во временную переменную сессии
+        await self.show_info_modal(
+            request=request,
+            message=f"Сырой пароль созданного администратора {admin_user.username}: ",
+            data=generated_password,
+        )
+
+        # NOTE: обязательно возвращать созданный объект!
+        #   Иначе будет 500 при "Save and continue editing"
+        #   потому что не смог найти созданный объект.
+        return admin_user
 
     def can_create(self, request: Request) -> bool:
         return self.is_super_admin(request)
