@@ -24,9 +24,9 @@ class AdminUserView(BaseModelView):
     row_actions = ["reset_password", "delete", "edit"]
 
     # Использует кастомные шаблоны для вывода нового модального окна
-    list_template = str("admin/list.html")
-    create_template = str("admin/create.html")
-    edit_template = str("admin/edit.html")
+    list_template = "admin/list.html"
+    create_template = "admin/create.html"
+    edit_template = "admin/edit.html"
 
     fields = [
         IntegerField(

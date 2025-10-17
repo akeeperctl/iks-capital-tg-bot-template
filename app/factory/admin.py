@@ -11,6 +11,7 @@ from starlette_admin.contrib.sqla import Admin
 from app.admin.auth import CustomAuthProvider
 from app.admin.middlewares import DBSessionMiddleware
 from app.admin.views import UserView, AdminUserView
+from app.const import TEMPLATES_DIR
 from app.models.config import AppConfig
 from app.models.sql import User, AdminUser
 
@@ -36,7 +37,7 @@ class CustomAdmin(Admin):
             login_logo_url=login_logo_url,
             auth_provider=auth_provider,
             middlewares=middlewares,
-            templates_dir="templates",
+            templates_dir=str(TEMPLATES_DIR),
         )
         self.config = config
         self.middlewares = [] if self.middlewares is None else list(self.middlewares)
