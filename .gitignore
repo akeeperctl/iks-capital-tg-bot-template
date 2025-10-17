@@ -6,7 +6,10 @@ data/*
 
 # Environment
 .venv/
+.env.docker
+.env.docker.test
 .env
+.env.test
 venv/
 uv.lock
 

@@ -26,6 +26,10 @@ class AdminUser(Base, TimestampMixin):
     password: Mapped[str]
     is_blocked: Mapped[bool] = mapped_column(default=False, server_default="false")
 
+    ## Akeeper 16.10.2025
+    is_super_admin: Mapped[bool] = mapped_column(default=False, server_default="false")
+    ## ~Akeeper
+
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(user_id={self.user_id})"
 

@@ -1,0 +1,44 @@
+<div class="modal modal-blur fade" id="modal-info" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div id="modal-form"></div>
+
+                <div>
+                    {% set data = request.session.get('info_modal_data') %}
+                    {% if data %}
+                        {{ data.get("message", "Информация") }}
+
+                    <div class="input-group mt-2 align-items-center bg-light rounded"
+                         style="padding: 10px; position: relative; min-height: 40px;">
+
+                        <span id="plain-data" class="me-2 font-monospace" style="user-select: all;">
+                            {{ data.get("data", "Данные") }}
+                        </span>
+
+                        <button
+                            class="btn btn-sm"
+                            style="background: #7c848e22; position: absolute; right:2px; top:60%;"
+                            type="button"
+                            id="copy-btn"
+                            title="Скопировать">
+                            <i class="fas fa-copy"></i>
+                        </button>
+
+                    </div>
+
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Копирует в буфер обмена и меняет цвет кнопки-->
+<script src="/statics/js/copy_btn_modal_info.js"></script>
