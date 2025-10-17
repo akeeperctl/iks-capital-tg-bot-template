@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from pydantic import ValidationError
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 from starlette_admin import (
@@ -10,17 +11,19 @@ from starlette_admin import (
     DateField,
     row_action,
 )
-from starlette_admin.exceptions import ActionFailed, FormValidationError
+from starlette_admin.exceptions import ActionFailed
+from starlette_admin.helpers import pydantic_error_to_form_validation_errors
 
 from app.admin.auth import generate_password
 from app.admin.views.base import BaseModelView
-from app.models.dto.user import AdminUserCreateWithPwdDto
+from app.models.dto.user import AdminUserCreateWithPwdDto, AdminUserCreateDto, AdminUserEditDto
 from app.services.user import AdminUserService
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class AdminUserView(BaseModelView):
+
     row_actions = ["reset_password", "delete", "edit"]
 
     # Использует кастомные шаблоны для вывода нового модального окна
@@ -32,7 +35,6 @@ class AdminUserView(BaseModelView):
         IntegerField(
             name="user_id",
             label="ID",
-            exclude_from_edit=True,
         ),
         StringField(
             name="name",
@@ -41,12 +43,10 @@ class AdminUserView(BaseModelView):
         StringField(
             name="username",
             label="Username",
-            exclude_from_edit=True,
         ),
         BooleanField(
             name="is_blocked",
             label="Is blocked",
-            exclude_from_create=True,
         ),
         BooleanField(
             name="is_super_admin",
@@ -55,9 +55,15 @@ class AdminUserView(BaseModelView):
         DateField(
             name="created_at",
             label="Created at",
-            exclude_from_edit=True,
-            exclude_from_create=True,
         ),
+    ]
+
+    # Исключает поля, которых нет в схеме
+    exclude_fields_from_create = [
+        i.name for i in fields if i.name not in AdminUserCreateDto.model_fields
+    ]
+    exclude_fields_from_edit = [
+        i.name for i in fields if i.name not in AdminUserEditDto.model_fields
     ]
 
     @row_action(
@@ -101,20 +107,19 @@ class AdminUserView(BaseModelView):
             raise ActionFailed(f"Ошибка при сбросе пароля: {str(e)}")
 
     async def validate(self, request: Request, data: dict[str, Any]) -> None:
-        errors: dict[str, str] = dict()
 
         # NOTE: если проверяемое поле отсутствует в форме, то исключение
         #   валидации будет "проглочено" и не будет отображено для этого поля.
         #   Соответственно страница просто обновится без каких-либо видимых ошибок,
         #   что вызовет вопрос "Почему оно не обновилось и ошибку не показало".
 
-        if "name" in data and (data.get("name") is None or len(data["name"]) < 5):
-            errors["name"] = "Ensure name has at least 5 characters"
-        if "username" in data and (data.get("username") is None or len(data["username"]) < 5):
-            errors["username"] = "Ensure username has at least 5 characters"
-        if len(errors) > 0:
-            logger.error("Validation errors: {}".format(errors))
-            raise FormValidationError(errors)
+        dto = self.select_dto_by_validation_type(request, AdminUserCreateDto, AdminUserEditDto)
+        try:
+            dto.model_validate(data)
+        except ValidationError as e:
+            # Переводит pydantic ошибки в формат StarletteAdmin (dict field -> error)
+            raise pydantic_error_to_form_validation_errors(e)
+
         return await super().validate(request, data)
 
     async def create(self, request: Request, data: dict) -> Any:

@@ -1,4 +1,4 @@
-from typing import Annotated, NewType, TypeAlias
+from typing import Annotated, NewType, TypeAlias, Literal
 
 from pydantic import PlainValidator, Field
 
@@ -15,4 +15,5 @@ Str2: TypeAlias = Annotated[str, Field(min_length=2)]
 Str3: TypeAlias = Annotated[str, Field(min_length=3)]
 Str5: TypeAlias = Annotated[str, Field(min_length=5)]
 Str8: TypeAlias = Annotated[str, Field(min_length=8)]
+AllowedLanguages: TypeAlias = Literal["en", "ru"]
 ## ~Akeeper

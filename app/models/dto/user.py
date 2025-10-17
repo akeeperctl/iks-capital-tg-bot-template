@@ -3,14 +3,14 @@ from typing import Optional
 import bcrypt
 from pydantic import Field
 
-from app.models.base import ActiveRecordModel
-from app.utils.custom_types import EntityId, Str8, Str5, Str2
+from app.models.base import ActiveRecordModel, PydanticModel
+from app.utils.custom_types import Str8, Str5, AllowedLanguages, EntityId
 
 
 class AdminUserDto(ActiveRecordModel):
-    user_id: EntityId
-    name: Str5
-    username: Str5
+    user_id: int
+    name: str
+    username: str
     password_hash: str = Field(..., alias="password")
     is_blocked: bool = False
 
@@ -26,9 +26,11 @@ class AdminUserDto(ActiveRecordModel):
         return bcrypt.checkpw(password.encode("utf-8"), self.password_hash.encode("utf-8"))
 
 
-class AdminUserCreateDto(ActiveRecordModel):
+## Akeeper 17.10.2025
+class AdminUserCreateDto(PydanticModel):
     name: Str5
     username: Str5
+    is_blocked: bool = False
     is_super_admin: bool = False
 
 
@@ -36,11 +38,34 @@ class AdminUserCreateWithPwdDto(AdminUserCreateDto):
     password: Optional[Str8] = None
 
 
-class UserDto(ActiveRecordModel):
-    user_id: EntityId
-    telegram_id: EntityId
+class AdminUserEditDto(PydanticModel):
     name: Str5
+    is_blocked: bool
+    is_super_admin: bool
+
+
+## ~Akeeper
+
+class UserDto(ActiveRecordModel):
+    user_id: int
+    telegram_id: int
+    name: str
     language: str
-    username: Optional[Str5] = None
+    username: Optional[str] = None
     language_code: Optional[str] = None
     bot_blocked: bool = False
+
+
+## Akeeper 17.10.2025
+class UserCreateDto(PydanticModel):
+    telegram_id: EntityId
+    name: Str5
+    username: Optional[Str5] = None
+    bot_blocked: bool = False
+    language: AllowedLanguages
+
+
+class UserEditDto(PydanticModel):
+    name: Str5
+    bot_blocked: bool
+## ~Akeeper
