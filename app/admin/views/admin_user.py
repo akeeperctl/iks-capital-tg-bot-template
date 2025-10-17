@@ -15,7 +15,7 @@ from starlette_admin.exceptions import ActionFailed
 from starlette_admin.helpers import pydantic_error_to_form_validation_errors
 
 from app.admin.auth import generate_password
-from app.admin.views.base import BaseModelView
+from app.admin.views.base import BaseModelView, ValidationTypesEnum
 from app.models.dto.user import AdminUserCreateWithPwdDto, AdminUserCreateDto, AdminUserEditDto
 from app.services.user import AdminUserService
 
@@ -123,6 +123,7 @@ class AdminUserView(BaseModelView):
         return await super().validate(request, data)
 
     async def create(self, request: Request, data: dict) -> Any:
+        request.session.update(validation_type=ValidationTypesEnum.CREATE.value)
         await self.validate(request, data)
 
         generated_password = generate_password()
