@@ -1,0 +1,9 @@
+<!--Показывает информационное модальное окно-->
+{% macro show_modal_info(request) -%}
+    {% include "admin/modals/info.html" %}
+    {% if request.session.get('show_info_modal') %}
+        <script src="/statics/js/show_modal_info.js"></script>
+        {% set _ = request.session.pop('show_info_modal') %}
+        {% set _ = request.session.pop('info_modal_data') %}
+    {% endif %}
+{%- endmacro %}

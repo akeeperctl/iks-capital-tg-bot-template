@@ -1,15 +1,36 @@
 from typing import Any, Optional
 
-import bcrypt
 from aiogram.types import User as AiogramUser
 
 from app.models.dto import AdminUserDto, UserDto
-from app.models.sql import User
-
+from app.models.sql import User, AdminUser
 from .base import BaseService
+from ..admin.auth import hash_password
+from ..models.dto.user import AdminUserCreateWithPwdDto
 
 
 class AdminUserService(BaseService):
+    ## Akeeper 16.10.2025
+    async def create(self, data: AdminUserCreateWithPwdDto) -> AdminUserDto:
+        _data = data
+        _data.password = hash_password(data.password)
+
+        db_admin_user: AdminUser = AdminUser(
+            **_data.model_dump(),
+        )
+
+        self.session.add(db_admin_user)
+        await self.session.flush()
+        return db_admin_user.dto()
+
+    async def get_by_id(self, user_id: int) -> AdminUserDto | None:
+        obj = await self.repository.admin_users.get_one_or_none(user_id=user_id)
+        if obj is None:
+            return None
+        return obj.dto()
+
+    ## ~Akeeper
+
     async def get_by_username(self, username: str) -> AdminUserDto | None:
         obj = await self.repository.admin_users.get_by_username(username=username)
         if obj is None:
@@ -19,11 +40,10 @@ class AdminUserService(BaseService):
     async def update_password(self, username: str, new_password: str) -> bool:
         """Обновляет пароль админа по username."""
         try:
-            hashed_password = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt()).decode(
-                "utf-8"
-            )
+            hashed_password = hash_password(new_password)
             updated_admin = await self.repository.admin_users.update(
-                username=username, password=hashed_password
+                username=username,
+                password=hashed_password,
             )
             if updated_admin:
                 self.logger.info(f"Password updated successfully for admin: {username}")

@@ -1,0 +1,7 @@
+{% from "admin/modals/macro_show_modal_info.html" import show_modal_info %}
+{% extends "starlette_admin/edit.html" %}
+
+{% block script %}
+    {{ super() }}
+    {{ show_modal_info(request) }}
+{% endblock %}

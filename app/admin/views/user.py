@@ -41,7 +41,7 @@ class UserView(ModelView):
         EnumField(
             name="language",
             label="Language",
-            choices=["ru", "en"]
+            choices=["ru", "en"],
         ),
     ]
 

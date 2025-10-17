@@ -4,7 +4,6 @@ from sqlalchemy import select
 from sqlalchemy.sql.functions import count
 
 from app.models.sql import AdminUser, User
-
 from .base import BaseRepository
 
 
@@ -12,6 +11,13 @@ class AdminUsersRepository(BaseRepository):
     async def get_by_username(self, username: str) -> Optional[AdminUser]:
         stmt = select(AdminUser).where(AdminUser.username == username)
         return await self.session.scalar(stmt)
+
+    ## Akeeper 16.10.2025
+    async def get_one_or_none(self, **filter_by):
+        stmt = select(AdminUser).filter_by(**filter_by)
+        return await self.session.scalar(stmt)
+
+    ## ~Akeeper
 
     async def update(self, username: str, **data: Any) -> Optional[AdminUser]:
         return await self._update(
