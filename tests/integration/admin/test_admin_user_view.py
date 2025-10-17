@@ -14,16 +14,19 @@ from app.services.user import AdminUserService
 
 @pytest_asyncio.fixture
 async def admin_user_service(repository: Repository, app_config) -> AdminUserService:
+    """Создаёт экземпляр AdminUserService для тестов."""
     return AdminUserService(repository=repository, config=app_config)
 
 
 @pytest_asyncio.fixture
 async def admin_view() -> AdminUserView:
+    """Создаёт экземпляр AdminUserView."""
     return AdminUserView(model=AdminUser)
 
 
 @pytest_asyncio.fixture
 async def mock_request(admin_user_service: AdminUserService) -> Mock:
+    """Мокает request с необходимыми атрибутами."""
     request = Mock(spec=Request)
     request.state = Mock()
     request.state.admin_user_service = admin_user_service
@@ -34,12 +37,14 @@ async def mock_request(admin_user_service: AdminUserService) -> Mock:
 
 @pytest_asyncio.fixture
 async def super_admin_request(mock_request: Mock) -> Mock:
+    """Request от имени супер-админа."""
     mock_request.state.user = Mock(is_super_admin=True)
     return mock_request
 
 
 @pytest_asyncio.fixture
 async def super_admin_create_request(mock_request: Mock) -> Mock:
+    """Request на создание от имени супер-админа."""
     mock_request.state.user = Mock(is_super_admin=True)
     mock_request.session.update(validation_type=ValidationTypesEnum.CREATE.value)
     return mock_request
@@ -47,6 +52,7 @@ async def super_admin_create_request(mock_request: Mock) -> Mock:
 
 @pytest_asyncio.fixture
 async def super_admin_edit_request(mock_request: Mock) -> Mock:
+    """Request на создание от имени супер-админа."""
     mock_request.state.user = Mock(is_super_admin=True)
     mock_request.session.update(validation_type=ValidationTypesEnum.EDIT.value)
     return mock_request
@@ -54,12 +60,14 @@ async def super_admin_edit_request(mock_request: Mock) -> Mock:
 
 @pytest_asyncio.fixture
 async def regular_admin_request(mock_request: Mock) -> Mock:
+    """Request от имени обычного админа."""
     mock_request.state.user = Mock(is_super_admin=False)
     return mock_request
 
 
 @pytest_asyncio.fixture
 async def create_admin_user(repository: Repository):
+    """Фикстура для создания тестового админа."""
 
     async def _impl(
             name: str = "TestAdmin",
@@ -85,6 +93,7 @@ async def create_admin_user(repository: Repository):
 
 @pytest.mark.asyncio
 class TestAdminUserCreate:
+    """Тесты создания администратора."""
 
     async def test_create_admin_user_success(
             self,
@@ -92,7 +101,7 @@ class TestAdminUserCreate:
             super_admin_request: Mock,
             repository: Repository,
     ):
-
+        """Тест успешного создания администратора."""
         data = {
             "name": "New Admin",
             "username": "new_admin",
@@ -114,7 +123,7 @@ class TestAdminUserCreate:
             admin_view: AdminUserView,
             super_admin_request: Mock,
     ):
-
+        """Тест генерации пароля при создании."""
         data = {
             "name": "Admin With Password",
             "username": "admin_pwd",
@@ -131,6 +140,7 @@ class TestAdminUserCreate:
 
 @pytest.mark.asyncio
 class TestAdminUserEdit:
+    """Тесты редактирования администратора."""
 
     async def test_edit_admin_name(
             self,
@@ -138,7 +148,7 @@ class TestAdminUserEdit:
             super_admin_edit_request: Mock,
             create_admin_user,
     ):
-
+        """Тест изменения имени администратора."""
         admin = await create_admin_user(name="Old Name")
 
         data = admin.dto().model_dump()
@@ -159,7 +169,7 @@ class TestAdminUserEdit:
             super_admin_request: Mock,
             create_admin_user,
     ):
-
+        """Тест что username не меняется при редактировании."""
         admin = await create_admin_user(username="original_username")
 
         data = {"username": "new_username", "name": "Name"}
@@ -170,13 +180,14 @@ class TestAdminUserEdit:
 
 @pytest.mark.asyncio
 class TestAdminUserValidation:
+    """Тесты валидации полей."""
 
     async def test_validate_name_min_length(
             self,
             admin_view: AdminUserView,
             super_admin_create_request: Mock,
     ):
-
+        """Тест валидации минимальной длины имени."""
         data = {"name": "ab", "username": "valid_user"}  # name < 5 символов
 
         with pytest.raises(FormValidationError) as exc_info:
@@ -190,7 +201,7 @@ class TestAdminUserValidation:
             admin_view: AdminUserView,
             super_admin_create_request: Mock,
     ):
-
+        """Тест валидации минимальной длины username."""
         data = {"name": "Valid Name", "username": "abc"}  # username < 5
 
         with pytest.raises(FormValidationError) as exc_info:
@@ -204,7 +215,7 @@ class TestAdminUserValidation:
             admin_view: AdminUserView,
             super_admin_create_request: Mock,
     ):
-
+        """Тест успешной валидации с корректными данными."""
         data = {
             "name": "Valid Admin Name",
             "username": "valid_username",
@@ -217,13 +228,14 @@ class TestAdminUserValidation:
 
 @pytest.mark.asyncio
 class TestAdminUserSecurity:
+    """Тесты безопасности и прав доступа."""
 
     async def test_only_super_admin_can_create(
             self,
             admin_view: AdminUserView,
             regular_admin_request: Mock,
     ):
-
+        """Тест что только суперадмин может создавать админов."""
         assert admin_view.can_create(regular_admin_request) is False
 
     async def test_super_admin_can_create(
@@ -231,7 +243,7 @@ class TestAdminUserSecurity:
             admin_view: AdminUserView,
             super_admin_request: Mock,
     ):
-
+        """Тест что суперадмин может создавать админов."""
         assert admin_view.can_create(super_admin_request) is True
 
     async def test_only_super_admin_can_delete(
@@ -239,7 +251,7 @@ class TestAdminUserSecurity:
             admin_view: AdminUserView,
             regular_admin_request: Mock,
     ):
-
+        """Тест что только суперадмин может удалять админов."""
         assert admin_view.can_delete(regular_admin_request) is False
 
     async def test_super_admin_can_delete(
@@ -247,12 +259,13 @@ class TestAdminUserSecurity:
             admin_view: AdminUserView,
             super_admin_request: Mock,
     ):
-
+        """Тест что суперадмин может удалять админов."""
         assert admin_view.can_delete(super_admin_request) is True
 
 
 @pytest.mark.asyncio
 class TestAdminUserResetPassword:
+    """Тесты сброса пароля."""
 
     async def test_reset_password_success(
             self,
@@ -260,7 +273,7 @@ class TestAdminUserResetPassword:
             super_admin_request: Mock,
             create_admin_user,
     ):
-
+        """Тест успешного сброса пароля."""
         admin = await create_admin_user(username="admin_to_reset")
 
         await admin_view.reset_password_action(
@@ -278,22 +291,23 @@ class TestAdminUserResetPassword:
             admin_view: AdminUserView,
             super_admin_request: Mock,
     ):
-
+        """Тест сброса пароля несуществующего админа."""
         with pytest.raises(ActionFailed):
             await admin_view.reset_password_action(super_admin_request, 99999)
 
 
 @pytest.mark.asyncio
 class TestAdminUserFields:
+    """Тесты настройки полей view."""
 
     async def test_exclude_fields_from_create(self, admin_view: AdminUserView):
-
+        """Тест что нужные поля исключены из создания."""
         excluded = admin_view.exclude_fields_from_create
         assert "user_id" in excluded
         assert "created_at" in excluded
 
     async def test_exclude_fields_from_edit(self, admin_view: AdminUserView):
-
+        """Тест что нужные поля исключены из редактирования."""
         excluded = admin_view.exclude_fields_from_edit
         assert "username" in excluded
         assert "user_id" in excluded
