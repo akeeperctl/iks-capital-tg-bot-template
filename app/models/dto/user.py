@@ -4,7 +4,7 @@ import bcrypt
 from pydantic import Field
 
 from app.models.base import ActiveRecordModel, PydanticModel
-from app.utils.custom_types import Str8, Str5, AllowedLanguages, EntityId
+from app.utils.custom_types import Str8, Str5
 
 
 class AdminUserDto(ActiveRecordModel):
@@ -54,18 +54,3 @@ class UserDto(ActiveRecordModel):
     username: Optional[str] = None
     language_code: Optional[str] = None
     bot_blocked: bool = False
-
-
-## Akeeper 17.10.2025
-class UserCreateDto(PydanticModel):
-    telegram_id: EntityId
-    name: Str5
-    username: Optional[Str5] = None
-    bot_blocked: bool = False
-    language: AllowedLanguages
-
-
-class UserEditDto(PydanticModel):
-    name: Str5
-    bot_blocked: bool
-## ~Akeeper
